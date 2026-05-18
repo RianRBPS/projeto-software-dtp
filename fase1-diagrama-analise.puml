@@ -1,0 +1,80 @@
+@startuml Fase1-ModelagemConceitual-StreamingMusica
+
+skinparam classAttributeIconSize 0
+skinparam classFontStyle Bold
+skinparam linetype ortho
+hide methods
+hide circle
+
+title Modelo de Domínio — Streaming de Música\n(Diagrama de Classes de Análise — Larman)
+
+class Usuario {
+  nome
+  email
+}
+
+class Player {
+  status
+}
+
+class EstadoPlayer {
+  posicaoMs
+  statusReproducao
+}
+
+class FilaReproducao {
+  ordem
+}
+
+class Faixa {
+  titulo
+  duracao
+  bpm
+}
+
+class Album {
+  titulo
+  anoLancamento
+}
+
+class Artista {
+  nome
+  genero
+}
+
+class GrafoRecomendacao {
+  pontuacaoSimilaridade
+}
+
+class HistoricoReproducao {
+  dataHora
+}
+
+class DispositivoUsuario {
+  tipo
+  identificador
+}
+
+' --- Associações ---
+
+Usuario "1" -- "1" Player : controla >
+
+Player "1" -- "1" EstadoPlayer : mantém >
+
+Player "1" -- "1" FilaReproducao : gerencia >
+
+FilaReproducao "1" -- "0..*" Faixa : agrega >
+
+Album "1" -- "1..*" Faixa : contém >
+
+Artista "1" -- "1..*" Album : lança >
+
+GrafoRecomendacao "1" -- "0..*" Faixa : sugere >
+
+HistoricoReproducao "1" -- "0..*" Faixa : registra >
+
+Usuario "1" -- "0..*" HistoricoReproducao : acumula >
+
+Usuario "1" -- "1..*" DispositivoUsuario : usa >
+
+@enduml
