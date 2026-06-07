@@ -1,0 +1,251 @@
+@startuml Fase3-DCD-StreamingMusica
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam nodesep 50
+skinparam ranksep 60
+
+title Diagrama de Classes de Projeto (DCD) — Streaming de Música\nPadrões GoF: Iterator · Strategy · Observer
+
+' ================================================================
+' DOMÍNIO BASE
+' ================================================================
+
+class Usuario {
+  - id: String
+  - nome: String
+  - email: String
+  + getPlayer(): Player
+  + getHistorico(): HistoricoReproducao
+}
+
+class Faixa {
+  - id: String
+  - titulo: String
+  - duracao: int
+  - bpm: int
+  + getId(): String
+  + getTitulo(): String
+  + getBpm(): int
+  + getDuracao(): int
+}
+
+class Album {
+  - id: String
+  - titulo: String
+  - anoLancamento: int
+  - faixas: List<Faixa>
+  + getFaixas(): List<Faixa>
+  + criarIterator(): FaixaIterator
+}
+
+class Artista {
+  - id: String
+  - nome: String
+  - genero: String
+  - albums: List<Album>
+  + getAlbums(): List<Album>
+}
+
+class DispositivoUsuario {
+  - id: String
+  - tipo: String
+  - identificador: String
+  + receberEstado(estado: EstadoPlayer): void
+}
+
+' ================================================================
+' PADRÃO ITERATOR — RN01
+' Encapsula a travessia de FilaReproducao sobre diferentes fontes
+' ================================================================
+
+package "Padrão Iterator (RN01)" #E8F4FD {
+
+  interface FaixaIterator <<interface>> {
+    + hasNext(): boolean
+    + next(): Faixa
+    + reset(): void
+  }
+
+  class AlbumIterator {
+    - faixas: List<Faixa>
+    - indiceAtual: int
+    + AlbumIterator(album: Album)
+    + hasNext(): boolean
+    + next(): Faixa
+    + reset(): void
+  }
+
+  class GrafoIterator {
+    - nos: List<NoGrafo>
+    - visitados: Set<String>
+    - indiceAtual: int
+    + GrafoIterator(grafo: GrafoRecomendacao)
+    + hasNext(): boolean
+    + next(): Faixa
+    + reset(): void
+  }
+
+  class CacheIterator {
+    - cache: List<Faixa>
+    - indiceAtual: int
+    + CacheIterator(cache: CacheHistorico)
+    + hasNext(): boolean
+    + next(): Faixa
+    + reset(): void
+  }
+
+  class GrafoRecomendacao {
+    - nos: List<NoGrafo>
+    + adicionarFaixa(faixa: Faixa, similaridade: double): void
+    + criarIterator(): FaixaIterator
+  }
+
+  class NoGrafo {
+    - faixa: Faixa
+    - similares: List<NoGrafo>
+    - pontuacaoSimilaridade: double
+    + getFaixa(): Faixa
+  }
+
+  class CacheHistorico {
+    - faixas: List<Faixa>
+    + adicionarFaixa(faixa: Faixa): void
+    + criarIterator(): FaixaIterator
+  }
+
+  class FilaReproducao {
+    - faixas: List<Faixa>
+    - iterator: FaixaIterator
+    + adicionarDeAlbum(album: Album): void
+    + adicionarDeGrafo(grafo: GrafoRecomendacao): void
+    + adicionarDeCache(cache: CacheHistorico): void
+    + definirIterator(it: FaixaIterator): void
+    + obterIterator(): FaixaIterator
+    + tamanho(): int
+    + getFaixas(): List<Faixa>
+  }
+
+  AlbumIterator  ..|> FaixaIterator
+  GrafoIterator  ..|> FaixaIterator
+  CacheIterator  ..|> FaixaIterator
+
+  Album          --> AlbumIterator       : cria
+  GrafoRecomendacao --> GrafoIterator   : cria
+  CacheHistorico --> CacheIterator       : cria
+
+  GrafoRecomendacao "1" *-- "0..*" NoGrafo
+  NoGrafo "0..*" -- "1" Faixa
+
+  FilaReproducao --> FaixaIterator : usa
+  FilaReproducao "1" o-- "0..*" Faixa
+}
+
+' ================================================================
+' PADRÃO STRATEGY — RN02
+' Algoritmo de seleção da próxima faixa intercambiável em runtime
+' ================================================================
+
+package "Padrão Strategy (RN02)" #EDF7ED {
+
+  interface EstrategiaSelecao <<interface>> {
+    + selecionarProxima(fila: FilaReproducao, historico: List<Faixa>): Faixa
+  }
+
+  class ModoSequencial {
+    + selecionarProxima(fila: FilaReproducao, historico: List<Faixa>): Faixa
+  }
+
+  class ModoShuffle {
+    - random: Random
+    + selecionarProxima(fila: FilaReproducao, historico: List<Faixa>): Faixa
+  }
+
+  class ModoSmartMix {
+    + selecionarProxima(fila: FilaReproducao, historico: List<Faixa>): Faixa
+    - calcularDiferencaBpm(a: Faixa, b: Faixa): int
+  }
+
+  ModoSequencial ..|> EstrategiaSelecao
+  ModoShuffle    ..|> EstrategiaSelecao
+  ModoSmartMix   ..|> EstrategiaSelecao
+}
+
+' ================================================================
+' PADRÃO OBSERVER — RN03
+' Player notifica módulos ao mudar de estado
+' ================================================================
+
+package "Padrão Observer (RN03)" #FEF9E7 {
+
+  interface ObservadorEstado <<interface>> {
+    + atualizar(estado: EstadoPlayer): void
+  }
+
+  class ModuloTelemetria {
+    - dispositivos: List<DispositivoUsuario>
+    + atualizar(estado: EstadoPlayer): void
+    + adicionarDispositivo(d: DispositivoUsuario): void
+  }
+
+  class ModuloHistorico {
+    - historico: HistoricoReproducao
+    + atualizar(estado: EstadoPlayer): void
+  }
+
+  class EstadoPlayer {
+    - faixaAtual: Faixa
+    - posicaoMs: long
+    - statusReproducao: String
+    + getFaixaAtual(): Faixa
+    + getPosicaoMs(): long
+    + getStatusReproducao(): String
+  }
+
+  class HistoricoReproducao {
+    - faixasOuvidas: List<Faixa>
+    + registrar(faixa: Faixa): void
+    + getFaixasOuvidas(): List<Faixa>
+  }
+
+  ModuloTelemetria ..|> ObservadorEstado
+  ModuloHistorico  ..|> ObservadorEstado
+
+  ModuloTelemetria "1" --> "0..*" DispositivoUsuario : notifica
+  ModuloHistorico  "1" --> "1"   HistoricoReproducao : atualiza
+}
+
+' ================================================================
+' PLAYER — Contexto central (usa Strategy + Subject do Observer)
+' ================================================================
+
+class Player {
+  - estado: EstadoPlayer
+  - fila: FilaReproducao
+  - estrategia: EstrategiaSelecao
+  - observadores: List<ObservadorEstado>
+  + reproduzir(): void
+  + pausar(): void
+  + avancar(): void
+  + definirEstrategia(e: EstrategiaSelecao): void
+  + registrarObservador(o: ObservadorEstado): void
+  + removerObservador(o: ObservadorEstado): void
+  - notificarObservadores(): void
+  - atualizarEstado(faixa: Faixa, posMs: long, status: String): void
+}
+
+' ================================================================
+' RELAÇÕES GERAIS
+' ================================================================
+
+Usuario          "1" --> "1"    Player
+Usuario          "1" --> "1..*" DispositivoUsuario
+Artista          "1" --> "1..*" Album
+Album            "1" *--> "1..*" Faixa
+
+Player           "1" *--> "1"   EstadoPlayer
+Player           "1" *--> "1"   FilaReproducao
+Player           "1" --> "1"    EstrategiaSelecao   : usa
+Player           "1" --> "0..*" ObservadorEstado    : notifica
+
+@enduml

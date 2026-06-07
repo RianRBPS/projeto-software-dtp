@@ -1,0 +1,64 @@
+@startuml Fase2-ArquiteturaMicroservicos-StreamingMusica
+
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 60
+skinparam ranksep 80
+
+title Diagrama de Componentes — Streaming de Música\n(Arquitetura de Microserviços com Docker)
+
+cloud "Cliente HTTP\n(Browser / App)" as cliente
+
+rectangle "Docker Network: dtp-net" {
+
+  rectangle "Container: ms-catalogo\n(porta 8080)" {
+    component [API REST\nCatálogo] as apiCatalogo
+    component [CatalogoService] as svcCatalogo
+    database "Memória\nList<Faixa>\nList<Album>\nList<Artista>\nGrafoRecomendacao" as memCatalogo
+
+    apiCatalogo --> svcCatalogo : delega
+    svcCatalogo --> memCatalogo : lê / escreve
+  }
+
+  rectangle "Container: ms-reproducao\n(porta 8081)" {
+    component [API REST\nReprodução] as apiReproducao
+    component [PlayerService] as svcPlayer
+    component [ModuloTelemetria] as telemetria
+    component [ModuloHistorico] as historico
+    database "Memória\nPlayer\nFilaReproducao\nEstadoPlayer\nHistoricoReproducao" as memReproducao
+
+    apiReproducao --> svcPlayer : delega
+    svcPlayer --> memReproducao : lê / escreve
+    svcPlayer ..> telemetria : notifica (assíncrono)
+    svcPlayer ..> historico : notifica (assíncrono)
+  }
+
+}
+
+cliente --> apiCatalogo : HTTP (porta 8080)
+cliente --> apiReproducao : HTTP (porta 8081)
+svcPlayer --> apiCatalogo : GET /faixas\nHTTP síncrono
+
+note bottom of memCatalogo
+  Isolamento total de memória.
+  Nenhum dado persiste em disco.
+end note
+
+note bottom of memReproducao
+  Isolamento total de memória.
+  Nenhum dado persiste em disco.
+end note
+
+note right of telemetria
+  RN03 — Observer
+  Atualiza celular e TV
+  do usuário via HTTP POST
+end note
+
+note right of historico
+  RN03 — Observer
+  Computa dados para
+  retrospectiva via HTTP POST
+end note
+
+@enduml
