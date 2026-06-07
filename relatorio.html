@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Relatório DTP — Streaming de Música</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code:wght@400;500&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      font-size: 11pt;
+      line-height: 1.7;
+      color: #1a1a2e;
+      background: #fff;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 48px;
+    }
+
+    /* ── Capa ── */
+    .cover {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      gap: 16px;
+      page-break-after: always;
+    }
+    .cover .institution { font-size: 13pt; font-weight: 600; color: #444; }
+    .cover .course { font-size: 11pt; color: #666; margin-bottom: 48px; }
+    .cover h1 { font-size: 22pt; font-weight: 700; color: #1a1a2e; line-height: 1.3; }
+    .cover .subtitle { font-size: 13pt; color: #555; margin-bottom: 48px; }
+    .cover .meta { font-size: 10.5pt; color: #444; line-height: 2; }
+    .cover .date { margin-top: 48px; font-size: 10pt; color: #888; }
+
+    /* ── Sumário ── */
+    .toc { page-break-after: always; }
+    .toc h2 { font-size: 15pt; border-bottom: 2px solid #1a1a2e; padding-bottom: 6px; margin-bottom: 20px; }
+    .toc ol { padding-left: 20px; }
+    .toc li { margin: 6px 0; }
+    .toc a { color: #1a1a2e; text-decoration: none; }
+    .toc a:hover { text-decoration: underline; }
+    .toc .sub { padding-left: 20px; list-style-type: lower-alpha; }
+
+    /* ── Seções ── */
+    section { margin-bottom: 40px; }
+    h2.section-title {
+      font-size: 15pt;
+      font-weight: 700;
+      color: #1a1a2e;
+      border-bottom: 2px solid #1a1a2e;
+      padding-bottom: 6px;
+      margin-bottom: 18px;
+      margin-top: 40px;
+    }
+    h3 { font-size: 12pt; font-weight: 600; color: #2c3e6b; margin: 20px 0 10px; }
+    h4 { font-size: 11pt; font-weight: 600; color: #444; margin: 16px 0 8px; }
+    p { margin-bottom: 12px; text-align: justify; }
+
+    /* ── Tabelas ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 24px;
+      font-size: 10pt;
+    }
+    th {
+      background: #1a1a2e;
+      color: #fff;
+      padding: 8px 12px;
+      text-align: left;
+      font-weight: 600;
+    }
+    td { padding: 7px 12px; border-bottom: 1px solid #dde; }
+    tr:nth-child(even) td { background: #f5f6fa; }
+
+    /* ── Código ── */
+    pre {
+      background: #f4f4f8;
+      border-left: 4px solid #4a6cf7;
+      padding: 16px 18px;
+      border-radius: 4px;
+      overflow-x: auto;
+      font-family: 'Fira Code', monospace;
+      font-size: 8.5pt;
+      line-height: 1.5;
+      margin: 16px 0 24px;
+      white-space: pre;
+    }
+    code { font-family: 'Fira Code', monospace; background: #eef; padding: 1px 5px; border-radius: 3px; font-size: 9pt; }
+
+    /* ── Diagrama placeholder ── */
+    .diagram-box {
+      border: 2px dashed #4a6cf7;
+      border-radius: 8px;
+      padding: 24px;
+      margin: 20px 0;
+      background: #f9faff;
+    }
+    .diagram-box .label {
+      font-size: 9pt;
+      color: #4a6cf7;
+      font-weight: 600;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .diagram-box img { max-width: 100%; border-radius: 4px; }
+    .diagram-box .placeholder-text {
+      color: #888;
+      font-size: 9.5pt;
+      font-style: italic;
+    }
+    .diagram-caption { font-size: 9pt; color: #555; text-align: center; margin-top: 8px; font-style: italic; }
+
+    /* ── Callout ── */
+    .callout {
+      border-left: 4px solid #f39c12;
+      background: #fffbf0;
+      padding: 12px 16px;
+      border-radius: 0 6px 6px 0;
+      margin: 16px 0;
+      font-size: 10pt;
+    }
+    .callout.info { border-color: #4a6cf7; background: #f0f4ff; }
+    .callout.success { border-color: #27ae60; background: #f0fff4; }
+
+    /* ── Lista ── */
+    ul, ol { padding-left: 22px; margin-bottom: 12px; }
+    li { margin-bottom: 4px; }
+
+    /* ── Badge de padrão ── */
+    .badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 8.5pt;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+    .badge.iterator { background: #dbeafe; color: #1d4ed8; }
+    .badge.strategy  { background: #dcfce7; color: #15803d; }
+    .badge.observer  { background: #fef9c3; color: #854d0e; }
+
+    /* ── Quebras de página ── */
+    .page-break { page-break-before: always; }
+
+    @media print {
+      body { max-width: 100%; padding: 20px 28px; }
+      a { color: inherit; text-decoration: none; }
+      .cover { min-height: auto; page-break-after: always; }
+      pre { font-size: 7.5pt; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════ CAPA ═══ -->
+<div class="cover">
+  <div class="institution">Universidade — Disciplina: Projeto de Software</div>
+  <div class="course">Desafio Teórico-Prático (DTP)</div>
+
+  <h1>Streaming de Música<br>Microserviço de Catálogo + Microserviço de Reprodução</h1>
+  <div class="subtitle">Opção B — Da Modelagem Conceitual à Implementação</div>
+
+  <div class="meta">
+    <strong>Equipe:</strong> [Nome dos integrantes]<br>
+    <strong>Linguagem:</strong> [Java / Python / Node.js — a definir]<br>
+    <strong>Repositório:</strong> github.com/RianRBPS/projeto-software-dtp
+  </div>
+
+  <div class="date">Junho de 2026</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ SUMÁRIO ═══ -->
+<div class="toc">
+  <h2>Sumário</h2>
+  <ol>
+    <li><a href="#contexto">Contexto e Escopo do Sistema</a></li>
+    <li><a href="#fase1">Fase I — Modelagem Conceitual (Análise de Domínio)</a>
+      <ol class="sub">
+        <li><a href="#fase1-regras">Regras de Negócio</a></li>
+        <li><a href="#fase1-classes">Classes Conceituais Identificadas</a></li>
+        <li><a href="#fase1-diagrama">Diagrama de Classes de Análise</a></li>
+      </ol>
+    </li>
+    <li><a href="#fase2">Fase II — Modelagem de Arquitetura (Microserviços)</a>
+      <ol class="sub">
+        <li><a href="#fase2-microservicos">Decomposição em Microserviços</a></li>
+        <li><a href="#fase2-comunicacao">Protocolo de Comunicação</a></li>
+        <li><a href="#fase2-diagrama">Diagrama de Componentes</a></li>
+      </ol>
+    </li>
+    <li><a href="#fase3">Fase III — Design Detalhado (Padrões GoF)</a>
+      <ol class="sub">
+        <li><a href="#fase3-iterator">Iterator — RN01</a></li>
+        <li><a href="#fase3-strategy">Strategy — RN02</a></li>
+        <li><a href="#fase3-observer">Observer — RN03</a></li>
+        <li><a href="#fase3-diagrama">Diagrama de Classes de Projeto (DCD)</a></li>
+      </ol>
+    </li>
+  </ol>
+</div>
+
+<!-- ═══════════════════════════════════════════════ 1. CONTEXTO ═══ -->
+<section id="contexto">
+  <h2 class="section-title">1. Contexto e Escopo do Sistema</h2>
+
+  <p>
+    O trabalho foi desenvolvido seguindo o <strong>Tema B — Streaming de Música</strong>, composto por dois microserviços
+    isolados: <strong>ms-catalogo</strong>, responsável pelo acervo de faixas, álbuns e artistas, e
+    <strong>ms-reproducao</strong>, responsável pela gestão do player, da fila de reprodução e do histórico do usuário.
+  </p>
+  <p>
+    Toda a gerência de estado é realizada estritamente em memória — sem banco de dados relacional ou NoSQL.
+    A infraestrutura é conteinerizada via Docker, com comunicação entre serviços por HTTP REST.
+  </p>
+
+  <table>
+    <thead><tr><th>Restrição</th><th>Decisão</th></tr></thead>
+    <tbody>
+      <tr><td>Linguagens permitidas</td><td>Java, Python ou Node.js (a definir na Fase IV)</td></tr>
+      <tr><td>Persistência</td><td>Somente em memória (List, Map, estruturas locais)</td></tr>
+      <tr><td>Infraestrutura</td><td>Docker + docker-compose.yml</td></tr>
+      <tr><td>Comunicação</td><td>HTTP REST (síncrono e assíncrono)</td></tr>
+      <tr><td>Microserviços</td><td>ms-catalogo (porta 8080) + ms-reproducao (porta 8081)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════════════════════════════════════════════ FASE I ═══ -->
+<section id="fase1" class="page-break">
+  <h2 class="section-title">2. Fase I — Modelagem Conceitual (Análise de Domínio)</h2>
+
+  <p>
+    A Fase I aplica a abordagem de Craig Larman para a construção do <strong>Modelo de Domínio</strong>:
+    somente classes conceituais, atributos em linguagem natural e associações com multiplicidade e verbos de ligação.
+    É terminantemente proibido incluir assinaturas de métodos, modificadores de acesso ou tipos de dados de linguagem de programação.
+  </p>
+
+  <h3 id="fase1-regras">2.1 Regras de Negócio</h3>
+
+  <table>
+    <thead><tr><th>RN</th><th>Padrão (Fase III)</th><th>Descrição</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>RN01</strong></td>
+        <td><span class="badge iterator">Iterator</span></td>
+        <td>A fila de reprodução é um agregado dinâmico de faixas vindas de fontes heterogêneas (lista linear de álbum, grafo de recomendações, cache de histórico de busca). O mecanismo de reprodução deve ser agnóstico quanto à estrutura de dados original.</td>
+      </tr>
+      <tr>
+        <td><strong>RN02</strong></td>
+        <td><span class="badge strategy">Strategy</span></td>
+        <td>O comportamento de seleção da próxima música muda dinamicamente: <em>Modo Sequencial</em> (ordem de inserção), <em>Modo Shuffle</em> (aleatório sem repetição no ciclo) e <em>Modo Smart Mix</em> (seleciona faixa com BPM mais próximo da atual).</td>
+      </tr>
+      <tr>
+        <td><strong>RN03</strong></td>
+        <td><span class="badge observer">Observer</span></td>
+        <td>Alterações no estado do player (música atual, milissegundo, play/pause) devem sincronizar, via requisições assíncronas, o Módulo de Telemetria de Dispositivos e o Módulo de Histórico em Tempo Real.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3 id="fase1-classes">2.2 Classes Conceituais Identificadas</h3>
+
+  <table>
+    <thead><tr><th>Classe</th><th>Atributos</th><th>Papel no Domínio</th></tr></thead>
+    <tbody>
+      <tr><td><code>Usuario</code></td><td>nome, email</td><td>Titular da conta; controla o player e acumula histórico</td></tr>
+      <tr><td><code>Player</code></td><td>status</td><td>Componente central de reprodução; gerencia fila e estado</td></tr>
+      <tr><td><code>EstadoPlayer</code></td><td>posicaoMs, statusReproducao</td><td>Snapshot do instante de reprodução (música, posição, play/pause)</td></tr>
+      <tr><td><code>FilaReproducao</code></td><td>ordem</td><td>Agrega faixas de origens distintas; alimenta o player</td></tr>
+      <tr><td><code>Faixa</code></td><td>titulo, duracao, bpm</td><td>Unidade de conteúdo; possui metadados para o Smart Mix</td></tr>
+      <tr><td><code>Album</code></td><td>titulo, anoLancamento</td><td>Fonte linear de faixas; estrutura de lista</td></tr>
+      <tr><td><code>Artista</code></td><td>nome, genero</td><td>Autor de álbuns</td></tr>
+      <tr><td><code>GrafoRecomendacao</code></td><td>pontuacaoSimilaridade</td><td>Fonte de faixas via nós conectados por similaridade</td></tr>
+      <tr><td><code>HistoricoReproducao</code></td><td>dataHora</td><td>Registro das faixas ouvidas; base para retrospectiva</td></tr>
+      <tr><td><code>DispositivoUsuario</code></td><td>tipo, identificador</td><td>Celular, TV — receptores de telemetria do player</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="fase1-diagrama">2.3 Diagrama de Classes de Análise (Larman)</h3>
+
+  <div class="callout info">
+    <strong>Instrução:</strong> exporte <code>fase1-diagrama-analise.puml</code> como PNG em
+    <a href="https://www.plantuml.com/plantuml" target="_blank">plantuml.com/plantuml</a>
+    e salve como <code>fase1.png</code> na mesma pasta deste arquivo. O diagrama será exibido abaixo automaticamente.
+  </div>
+
+  <div class="diagram-box">
+    <div class="label">Figura 1 — Modelo de Domínio (Fase I)</div>
+    <img src="fase1.png" alt="Diagrama de Classes de Análise — Fase I"
+         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+    <p class="placeholder-text" style="display:none;">
+      ⚠ Imagem não encontrada. Exporte <code>fase1-diagrama-analise.puml</code> como <code>fase1.png</code> e salve nesta pasta.
+    </p>
+  </div>
+  <p class="diagram-caption">Figura 1 — Diagrama de Classes de Análise seguindo o padrão Larman (sem métodos, sem tipos de linguagem)</p>
+
+  <h4>Associações principais</h4>
+  <table>
+    <thead><tr><th>Origem</th><th>Verbo</th><th>Destino</th><th>Multiplicidade</th></tr></thead>
+    <tbody>
+      <tr><td>Usuario</td><td>controla</td><td>Player</td><td>1 → 1</td></tr>
+      <tr><td>Player</td><td>mantém</td><td>EstadoPlayer</td><td>1 → 1</td></tr>
+      <tr><td>Player</td><td>gerencia</td><td>FilaReproducao</td><td>1 → 1</td></tr>
+      <tr><td>FilaReproducao</td><td>agrega</td><td>Faixa</td><td>1 → 0..*</td></tr>
+      <tr><td>Album</td><td>contém</td><td>Faixa</td><td>1 → 1..*</td></tr>
+      <tr><td>Artista</td><td>lança</td><td>Album</td><td>1 → 1..*</td></tr>
+      <tr><td>GrafoRecomendacao</td><td>sugere</td><td>Faixa</td><td>1 → 0..*</td></tr>
+      <tr><td>Usuario</td><td>acumula</td><td>HistoricoReproducao</td><td>1 → 0..*</td></tr>
+      <tr><td>HistoricoReproducao</td><td>registra</td><td>Faixa</td><td>1 → 0..*</td></tr>
+      <tr><td>Usuario</td><td>usa</td><td>DispositivoUsuario</td><td>1 → 1..*</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════════════════════════════════════════════ FASE II ═══ -->
+<section id="fase2" class="page-break">
+  <h2 class="section-title">3. Fase II — Modelagem de Arquitetura (Microserviços)</h2>
+
+  <p>
+    O sistema é decomposto em dois microserviços isolados, cada um com sua própria memória interna
+    e sem compartilhamento de estado. A orquestração é feita via <code>docker-compose.yml</code>,
+    que configura a rede interna <code>dtp-net</code> e expõe as portas HTTP ao cliente externo.
+  </p>
+
+  <h3 id="fase2-microservicos">3.1 Decomposição em Microserviços</h3>
+
+  <table>
+    <thead><tr><th>Container</th><th>Porta</th><th>Responsabilidades</th><th>Estado em memória</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>ms-catalogo</strong></td>
+        <td>8080</td>
+        <td>CRUD de Faixas, Albums, Artistas e GrafoRecomendacao</td>
+        <td><code>List&lt;Faixa&gt;</code>, <code>List&lt;Album&gt;</code>, <code>List&lt;Artista&gt;</code>, <code>GrafoRecomendacao</code></td>
+      </tr>
+      <tr>
+        <td><strong>ms-reproducao</strong></td>
+        <td>8081</td>
+        <td>Gestão do Player, FilaReproducao, EstadoPlayer, HistoricoReproducao e Dispositivos</td>
+        <td><code>Player</code>, <code>FilaReproducao</code>, <code>EstadoPlayer</code>, <code>List&lt;HistoricoReproducao&gt;</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3 id="fase2-comunicacao">3.2 Protocolo de Comunicação</h3>
+
+  <table>
+    <thead><tr><th>Origem</th><th>Destino</th><th>Tipo</th><th>Exemplo de rota</th><th>Propósito</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>ms-reproducao</td>
+        <td>ms-catalogo</td>
+        <td>HTTP GET <strong>síncrono</strong></td>
+        <td><code>GET /faixas/{id}</code></td>
+        <td>Buscar dados de faixas para popular a fila</td>
+      </tr>
+      <tr>
+        <td>ms-reproducao</td>
+        <td>ModuloTelemetria</td>
+        <td>HTTP POST <strong>assíncrono</strong></td>
+        <td><code>POST /telemetria/estado</code></td>
+        <td>Notificar celular e TV do usuário (Observer RN03)</td>
+      </tr>
+      <tr>
+        <td>ms-reproducao</td>
+        <td>ModuloHistorico</td>
+        <td>HTTP POST <strong>assíncrono</strong></td>
+        <td><code>POST /historico/registrar</code></td>
+        <td>Computar dados para a retrospectiva (Observer RN03)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <strong>Isolamento de memória:</strong> nenhum objeto é compartilhado entre containers. O <code>ms-reproducao</code>
+    mantém apenas o ID da faixa em sua fila; os dados completos (título, BPM etc.) são buscados sob demanda no
+    <code>ms-catalogo</code> via HTTP GET síncrono.
+  </div>
+
+  <h3 id="fase2-diagrama">3.3 Diagrama de Componentes</h3>
+
+  <div class="callout info">
+    <strong>Instrução:</strong> exporte <code>fase2-diagrama-componentes.puml</code> como PNG e salve como <code>fase2.png</code>.
+  </div>
+
+  <div class="diagram-box">
+    <div class="label">Figura 2 — Arquitetura de Microserviços (Fase II)</div>
+    <img src="fase2.png" alt="Diagrama de Componentes — Fase II"
+         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+    <p class="placeholder-text" style="display:none;">
+      ⚠ Imagem não encontrada. Exporte <code>fase2-diagrama-componentes.puml</code> como <code>fase2.png</code>.
+    </p>
+  </div>
+  <p class="diagram-caption">Figura 2 — Diagrama de Componentes com isolamento de memória e comunicação REST/HTTP</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════ FASE III ═══ -->
+<section id="fase3" class="page-break">
+  <h2 class="section-title">4. Fase III — Design Detalhado (Padrões GoF)</h2>
+
+  <p>
+    O Diagrama de Classes de Projeto (DCD) é a evolução direta do Modelo de Domínio da Fase I.
+    Nesta fase, todos os atributos recebem tipos de dados, os métodos ganham assinaturas completas,
+    visibilidade é explicitada e os três padrões GoF são aplicados conforme o mapeamento mandatório do DTP.
+  </p>
+
+  <!-- ── ITERATOR ── -->
+  <h3 id="fase3-iterator">4.1 <span class="badge iterator">Iterator</span> — RN01: Fila de Reprodução Agnóstica</h3>
+
+  <p>
+    A <strong>RN01</strong> exige que o componente que consome a fila de reprodução seja completamente
+    agnóstico quanto à estrutura de dados interna de cada fonte (lista linear de álbum, grafo de
+    recomendações, cache de histórico). O padrão <strong>Iterator</strong> resolve isso encapsulando
+    a travessia atrás de uma interface uniforme.
+  </p>
+
+  <h4>Estrutura do padrão</h4>
+  <table>
+    <thead><tr><th>Elemento</th><th>Tipo</th><th>Papel</th></tr></thead>
+    <tbody>
+      <tr><td><code>FaixaIterator</code></td><td>Interface</td><td>Define <code>hasNext()</code>, <code>next()</code>, <code>reset()</code> — única interface que o cliente conhece</td></tr>
+      <tr><td><code>AlbumIterator</code></td><td>Concreto</td><td>Itera sobre <code>List&lt;Faixa&gt;</code> de um álbum (acesso por índice)</td></tr>
+      <tr><td><code>GrafoIterator</code></td><td>Concreto</td><td>Percorre nós do grafo de recomendações (BFS/DFS), controlando visitados</td></tr>
+      <tr><td><code>CacheIterator</code></td><td>Concreto</td><td>Itera sobre o cache de busca linear do histórico</td></tr>
+      <tr><td><code>FilaReproducao</code></td><td>Contexto/Agregado</td><td>Aceita fontes distintas e delega a travessia ao iterator configurado</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout success">
+    <strong>Encapsulamento garantido:</strong> o cliente (<code>Player</code>) interage exclusivamente com
+    <code>FaixaIterator</code> — jamais acessa <code>List&lt;Faixa&gt;</code>, <code>List&lt;NoGrafo&gt;</code>
+    ou qualquer outra estrutura interna das fontes.
+  </div>
+
+  <!-- ── STRATEGY ── -->
+  <h3 id="fase3-strategy">4.2 <span class="badge strategy">Strategy</span> — RN02: Algoritmo de Seleção Intercambiável</h3>
+
+  <p>
+    A <strong>RN02</strong> exige que o comportamento de seleção da próxima música mude dinamicamente,
+    sem reiniciar o container. O padrão <strong>Strategy</strong> encapsula cada algoritmo em uma
+    classe concreta intercambiável em tempo de execução via <code>Player.definirEstrategia()</code>.
+  </p>
+
+  <h4>Estrutura do padrão</h4>
+  <table>
+    <thead><tr><th>Elemento</th><th>Tipo</th><th>Comportamento</th></tr></thead>
+    <tbody>
+      <tr><td><code>EstrategiaSelecao</code></td><td>Interface</td><td>Contrato: <code>selecionarProxima(fila, historico): Faixa</code></td></tr>
+      <tr><td><code>ModoSequencial</code></td><td>Concreto</td><td>Segue estritamente a ordem de inserção; esvazia a fila progressivamente</td></tr>
+      <tr><td><code>ModoShuffle</code></td><td>Concreto</td><td>Seleciona aleatoriamente sem repetir no ciclo; mantém conjunto de já tocadas</td></tr>
+      <tr><td><code>ModoSmartMix</code></td><td>Concreto</td><td>Varre a fila e seleciona a faixa com menor diferença de BPM em relação à atual</td></tr>
+      <tr><td><code>Player</code></td><td>Contexto</td><td>Delega a seleção à estratégia configurada; expõe <code>definirEstrategia()</code></td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <strong>Demonstração obrigatória na apresentação:</strong> criar uma quarta estratégia (ex: <em>Modo Cronológico</em>
+    por ano de lançamento) e trocá-la via API sem reiniciar o container — evidenciando o princípio Open/Closed.
+  </div>
+
+  <!-- ── OBSERVER ── -->
+  <h3 id="fase3-observer">4.3 <span class="badge observer">Observer</span> — RN03: Sincronização de Estado</h3>
+
+  <p>
+    A <strong>RN03</strong> exige que mudanças no <code>EstadoPlayer</code> sincronizem automaticamente
+    e de forma assíncrona dois módulos independentes. O padrão <strong>Observer</strong> desacopla o
+    <code>Player</code> (Subject) dos módulos receptores (Observers).
+  </p>
+
+  <h4>Estrutura do padrão</h4>
+  <table>
+    <thead><tr><th>Elemento</th><th>Tipo</th><th>Papel</th></tr></thead>
+    <tbody>
+      <tr><td><code>ObservadorEstado</code></td><td>Interface</td><td>Contrato: <code>atualizar(estado: EstadoPlayer): void</code></td></tr>
+      <tr><td><code>ModuloTelemetria</code></td><td>Observer Concreto</td><td>Recebe estado e envia HTTP POST para cada <code>DispositivoUsuario</code> (celular, TV)</td></tr>
+      <tr><td><code>ModuloHistorico</code></td><td>Observer Concreto</td><td>Recebe estado e persiste em memória no <code>HistoricoReproducao</code></td></tr>
+      <tr><td><code>Player</code></td><td>Subject</td><td>Mantém lista de observers; chama <code>notificarObservadores()</code> em toda mudança de estado</td></tr>
+    </tbody>
+  </table>
+
+  <h4>Justificativa: Push vs. Pull</h4>
+  <p>
+    Adotou-se o modelo <strong>Push</strong>: o <code>Player</code> envia o <code>EstadoPlayer</code>
+    completo para cada observer no momento da notificação. A escolha se justifica por três razões:
+  </p>
+  <ul>
+    <li><strong>Redução de round-trips:</strong> no modelo Pull, cada observer precisaria fazer uma
+    requisição adicional ao <code>Player</code> para buscar o estado — dobrando o tráfego de rede
+    entre microserviços.</li>
+    <li><strong>Interface mais simples:</strong> o contrato <code>atualizar(estado)</code> é autocontido;
+    o observer não precisa manter referência ao subject nem conhecer sua API de leitura.</li>
+    <li><strong>Trade-off aceito:</strong> o acoplamento de dados cresce — qualquer campo adicionado a
+    <code>EstadoPlayer</code> é automaticamente propagado a todos os observers, mesmo que eles não o
+    utilizem. Para o escopo deste sistema, onde <code>EstadoPlayer</code> tem apenas três campos
+    (faixaAtual, posicaoMs, statusReproducao), o custo é desprezível.</li>
+  </ul>
+
+  <h3 id="fase3-diagrama">4.4 Diagrama de Classes de Projeto (DCD)</h3>
+
+  <div class="callout info">
+    <strong>Instrução:</strong> exporte <code>fase3-dcd-padroes.puml</code> como PNG e salve como <code>fase3.png</code>.
+  </div>
+
+  <div class="diagram-box">
+    <div class="label">Figura 3 — DCD com padrões Iterator, Strategy e Observer (Fase III)</div>
+    <img src="fase3.png" alt="Diagrama de Classes de Projeto — Fase III"
+         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+    <p class="placeholder-text" style="display:none;">
+      ⚠ Imagem não encontrada. Exporte <code>fase3-dcd-padroes.puml</code> como <code>fase3.png</code>.
+    </p>
+  </div>
+  <p class="diagram-caption">Figura 3 — Diagrama de Classes de Projeto: evolução do Modelo de Domínio com tipos, visibilidade e padrões GoF</p>
+
+  <h4>Resumo dos padrões no DCD</h4>
+  <table>
+    <thead><tr><th>RN</th><th>Padrão</th><th>Interface</th><th>Concretos</th><th>Contexto</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>RN01</td>
+        <td><span class="badge iterator">Iterator</span></td>
+        <td><code>FaixaIterator</code></td>
+        <td><code>AlbumIterator</code>, <code>GrafoIterator</code>, <code>CacheIterator</code></td>
+        <td><code>FilaReproducao</code></td>
+      </tr>
+      <tr>
+        <td>RN02</td>
+        <td><span class="badge strategy">Strategy</span></td>
+        <td><code>EstrategiaSelecao</code></td>
+        <td><code>ModoSequencial</code>, <code>ModoShuffle</code>, <code>ModoSmartMix</code></td>
+        <td><code>Player</code></td>
+      </tr>
+      <tr>
+        <td>RN03</td>
+        <td><span class="badge observer">Observer</span></td>
+        <td><code>ObservadorEstado</code></td>
+        <td><code>ModuloTelemetria</code>, <code>ModuloHistorico</code></td>
+        <td><code>Player</code> (Subject)</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+</body>
+</html>
