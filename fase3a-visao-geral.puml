@@ -1,0 +1,105 @@
+@startuml Fase3a-Visao-Geral
+
+skinparam classAttributeIconSize 0
+skinparam nodesep 40
+skinparam ranksep 50
+hide circle
+
+title Fase III — Visão Geral do DCD\nRelações entre Player e os três padrões GoF
+
+' ── Domínio base ──
+class Usuario {
+  - id: String
+  - nome: String
+  - email: String
+}
+
+class Faixa {
+  - id: String
+  - titulo: String
+  - bpm: int
+  - duracao: int
+}
+
+class DispositivoUsuario {
+  - tipo: String
+  - identificador: String
+}
+
+' ── Interfaces dos padrões ──
+interface FaixaIterator <<interface>> {
+  + hasNext(): boolean
+  + next(): Faixa
+  + reset(): void
+}
+
+interface EstrategiaSelecao <<interface>> {
+  + selecionarProxima(fila: FilaReproducao, historico: List<Faixa>): Faixa
+}
+
+interface ObservadorEstado <<interface>> {
+  + atualizar(estado: EstadoPlayer): void
+}
+
+' ── Classes de suporte ──
+class FilaReproducao {
+  - faixas: List<Faixa>
+  + obterIterator(): FaixaIterator
+  + tamanho(): int
+}
+
+class EstadoPlayer {
+  - faixaAtual: Faixa
+  - posicaoMs: long
+  - statusReproducao: String
+}
+
+' ── Player: contexto central ──
+class Player {
+  - estado: EstadoPlayer
+  - fila: FilaReproducao
+  - estrategia: EstrategiaSelecao
+  - observadores: List<ObservadorEstado>
+  + reproduzir(): void
+  + pausar(): void
+  + avancar(): void
+  + definirEstrategia(e: EstrategiaSelecao): void
+  + registrarObservador(o: ObservadorEstado): void
+  + removerObservador(o: ObservadorEstado): void
+  - notificarObservadores(): void
+}
+
+' ── Relações ──
+Usuario        "1" --> "1"    Player
+Usuario        "1" --> "1..*" DispositivoUsuario
+
+Player         "1" *--> "1"    EstadoPlayer
+Player         "1" *--> "1"    FilaReproducao
+Player         "1" -->  "1"    EstrategiaSelecao  : usa >
+Player         "1" -->  "0..*" ObservadorEstado   : notifica >
+
+FilaReproducao "1" o-- "0..*"  Faixa
+FilaReproducao      -->         FaixaIterator      : usa >
+
+note bottom of FaixaIterator
+  Ver Diagrama 3b
+  para implementações concretas
+  (AlbumIterator, GrafoIterator,
+  CacheIterator)
+end note
+
+note bottom of EstrategiaSelecao
+  Ver Diagrama 3c
+  para implementações concretas
+  (ModoSequencial, ModoShuffle,
+  ModoSmartMix)
+end note
+
+note bottom of ObservadorEstado
+  Ver Diagrama 3d
+  para implementações concretas
+  (ModuloTelemetria,
+  ModuloHistorico)
+end note
+
+@enduml

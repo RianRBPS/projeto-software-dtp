@@ -1,0 +1,107 @@
+@startuml Fase3d-Observer
+
+skinparam classAttributeIconSize 0
+skinparam nodesep 40
+skinparam ranksep 50
+hide circle
+
+title Fase III — Padrão Observer (RN03)\nSincronização de Estado do Player (modelo Push)
+
+' ── Subject ──
+class Player {
+  - estado: EstadoPlayer
+  - observadores: List<ObservadorEstado>
+  + reproduzir(): void
+  + pausar(): void
+  + avancar(): void
+  + registrarObservador(o: ObservadorEstado): void
+  + removerObservador(o: ObservadorEstado): void
+  - notificarObservadores(): void
+  - atualizarEstado(faixa: Faixa, posMs: long, status: String): void
+}
+
+' ── Interface Observer ──
+interface ObservadorEstado <<interface>> {
+  + atualizar(estado: EstadoPlayer): void
+}
+
+' ── Observers concretos (lado a lado) ──
+together {
+  class ModuloTelemetria {
+    - dispositivos: List<DispositivoUsuario>
+    + atualizar(estado: EstadoPlayer): void
+    + adicionarDispositivo(d: DispositivoUsuario): void
+  }
+
+  class ModuloHistorico {
+    - historico: HistoricoReproducao
+    + atualizar(estado: EstadoPlayer): void
+  }
+}
+
+' ── Classes de suporte (lado a lado) ──
+together {
+  class DispositivoUsuario {
+    - id: String
+    - tipo: String
+    - identificador: String
+    + receberEstado(estado: EstadoPlayer): void
+  }
+
+  class HistoricoReproducao {
+    - faixasOuvidas: List<Faixa>
+    + registrar(faixa: Faixa): void
+    + getFaixasOuvidas(): List<Faixa>
+  }
+}
+
+' ── Estado ──
+class EstadoPlayer {
+  - faixaAtual: Faixa
+  - posicaoMs: long
+  - statusReproducao: String
+  + getFaixaAtual(): Faixa
+  + getPosicaoMs(): long
+  + getStatusReproducao(): String
+}
+
+class Faixa {
+  - id: String
+  - titulo: String
+  - bpm: int
+  + getId(): String
+  + getTitulo(): String
+}
+
+' ── Relações ──
+ModuloTelemetria ..|> ObservadorEstado
+ModuloHistorico  ..|> ObservadorEstado
+
+Player "1" *--> "1"    EstadoPlayer
+Player "1" -->  "0..*" ObservadorEstado : notifica (Push) >
+
+ModuloTelemetria "1" --> "0..*" DispositivoUsuario  : envia HTTP POST >
+ModuloHistorico  "1" --> "1"   HistoricoReproducao  : atualiza >
+
+EstadoPlayer "1" --> "1" Faixa : referencia >
+
+note right of Player
+  Modelo Push adotado:
+  Player envia EstadoPlayer
+  completo a cada notificação.
+  Observers não precisam
+  buscar dados no Subject.
+end note
+
+note bottom of ModuloTelemetria
+  Itera sobre dispositivos
+  e envia HTTP POST assíncrono
+  (celular, TV do usuário).
+end note
+
+note bottom of ModuloHistorico
+  Registra faixa em memória
+  para retrospectiva de fim de ano.
+end note
+
+@enduml

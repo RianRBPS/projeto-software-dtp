@@ -1,0 +1,125 @@
+@startuml Fase3b-Iterator
+
+skinparam classAttributeIconSize 0
+skinparam nodesep 35
+skinparam ranksep 45
+hide circle
+
+title Fase III — Padrão Iterator (RN01)\nFila de Reprodução Agnóstica à Estrutura de Dados
+
+' ── Interface ──
+interface FaixaIterator <<interface>> {
+  + hasNext(): boolean
+  + next(): Faixa
+  + reset(): void
+}
+
+' ── Iteradores concretos (lado a lado) ──
+together {
+  class AlbumIterator {
+    - faixas: List<Faixa>
+    - indiceAtual: int
+    + AlbumIterator(album: Album)
+    + hasNext(): boolean
+    + next(): Faixa
+    + reset(): void
+  }
+
+  class GrafoIterator {
+    - nos: List<NoGrafo>
+    - visitados: Set<String>
+    - indiceAtual: int
+    + GrafoIterator(grafo: GrafoRecomendacao)
+    + hasNext(): boolean
+    + next(): Faixa
+    + reset(): void
+  }
+
+  class CacheIterator {
+    - cache: List<Faixa>
+    - indiceAtual: int
+    + CacheIterator(cache: CacheHistorico)
+    + hasNext(): boolean
+    + next(): Faixa
+    + reset(): void
+  }
+}
+
+' ── Fontes / Agregados (lado a lado) ──
+together {
+  class Album {
+    - id: String
+    - titulo: String
+    - anoLancamento: int
+    - faixas: List<Faixa>
+    + getFaixas(): List<Faixa>
+    + criarIterator(): FaixaIterator
+  }
+
+  class GrafoRecomendacao {
+    - nos: List<NoGrafo>
+    + adicionarFaixa(faixa: Faixa, similaridade: double): void
+    + criarIterator(): FaixaIterator
+  }
+
+  class CacheHistorico {
+    - faixas: List<Faixa>
+    + adicionarFaixa(faixa: Faixa): void
+    + criarIterator(): FaixaIterator
+  }
+}
+
+' ── Classes de suporte ──
+class NoGrafo {
+  - faixa: Faixa
+  - similares: List<NoGrafo>
+  - pontuacaoSimilaridade: double
+  + getFaixa(): Faixa
+}
+
+class Faixa {
+  - id: String
+  - titulo: String
+  - bpm: int
+  - duracao: int
+  + getId(): String
+  + getTitulo(): String
+  + getBpm(): int
+}
+
+' ── Contexto ──
+class FilaReproducao {
+  - faixas: List<Faixa>
+  - iterator: FaixaIterator
+  + adicionarDeAlbum(album: Album): void
+  + adicionarDeGrafo(grafo: GrafoRecomendacao): void
+  + adicionarDeCache(cache: CacheHistorico): void
+  + definirIterator(it: FaixaIterator): void
+  + obterIterator(): FaixaIterator
+  + tamanho(): int
+}
+
+' ── Relações ──
+AlbumIterator  ..|> FaixaIterator
+GrafoIterator  ..|> FaixaIterator
+CacheIterator  ..|> FaixaIterator
+
+Album             --> AlbumIterator      : cria >
+GrafoRecomendacao --> GrafoIterator      : cria >
+CacheHistorico    --> CacheIterator      : cria >
+
+GrafoRecomendacao "1" *-- "0..*" NoGrafo
+NoGrafo            "1" -->  "1"  Faixa   : referencia >
+
+FilaReproducao "1" --> "1"    FaixaIterator : usa >
+FilaReproducao "1" o-- "0..*" Faixa
+
+note right of FilaReproducao
+  O cliente (Player) usa
+  exclusivamente FaixaIterator
+  — nunca acessa List<Faixa>,
+  List<NoGrafo> ou qualquer
+  estrutura interna das fontes.
+end note
+
+@enduml

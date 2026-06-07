@@ -1,0 +1,85 @@
+@startuml Fase3c-Strategy
+
+skinparam classAttributeIconSize 0
+skinparam nodesep 40
+skinparam ranksep 50
+hide circle
+
+title Fase III — Padrão Strategy (RN02)\nAlgoritmo de Seleção Intercambiável em Runtime
+
+' ── Interface ──
+interface EstrategiaSelecao <<interface>> {
+  + selecionarProxima(fila: FilaReproducao, historico: List<Faixa>): Faixa
+}
+
+' ── Estratégias concretas (lado a lado) ──
+together {
+  class ModoSequencial {
+    + selecionarProxima(fila: FilaReproducao, historico: List<Faixa>): Faixa
+  }
+
+  class ModoShuffle {
+    - random: Random
+    + selecionarProxima(fila: FilaReproducao, historico: List<Faixa>): Faixa
+  }
+
+  class ModoSmartMix {
+    + selecionarProxima(fila: FilaReproducao, historico: List<Faixa>): Faixa
+    - calcularDiferencaBpm(a: Faixa, b: Faixa): int
+  }
+}
+
+' ── Contexto ──
+class Player {
+  - estrategia: EstrategiaSelecao
+  - fila: FilaReproducao
+  + reproduzir(): void
+  + avancar(): void
+  + definirEstrategia(e: EstrategiaSelecao): void
+}
+
+' ── Suporte ──
+class FilaReproducao {
+  - faixas: List<Faixa>
+  + getFaixas(): List<Faixa>
+  + tamanho(): int
+}
+
+class Faixa {
+  - id: String
+  - titulo: String
+  - bpm: int
+  + getBpm(): int
+  + getId(): String
+}
+
+' ── Relações ──
+ModoSequencial ..|> EstrategiaSelecao
+ModoShuffle    ..|> EstrategiaSelecao
+ModoSmartMix   ..|> EstrategiaSelecao
+
+Player "1" --> "1"    EstrategiaSelecao : usa >
+Player "1" --> "1"    FilaReproducao
+
+FilaReproducao "1" o-- "0..*" Faixa
+
+note right of Player
+  definirEstrategia() permite
+  trocar o algoritmo em runtime
+  sem reiniciar o container.
+  Princípio Open/Closed aplicado.
+end note
+
+note bottom of ModoSmartMix
+  Varre a fila e seleciona
+  a faixa com menor
+  |BPM_atual - BPM_candidata|
+end note
+
+note bottom of ModoShuffle
+  Mantém Set de faixas já
+  tocadas no ciclo atual.
+  Reset ao esgotar a fila.
+end note
+
+@enduml

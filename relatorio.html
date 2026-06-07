@@ -503,21 +503,55 @@
     (faixaAtual, posicaoMs, statusReproducao), o custo é desprezível.</li>
   </ul>
 
-  <h3 id="fase3-diagrama">4.4 Diagrama de Classes de Projeto (DCD)</h3>
+  <h3 id="fase3-diagrama">4.4 Diagramas de Classes de Projeto (DCD)</h3>
+
+  <p>O DCD foi dividido em quatro diagramas complementares para garantir legibilidade. Exporte cada
+  <code>.puml</code> em <a href="https://www.plantuml.com/plantuml" target="_blank">plantuml.com/plantuml</a>
+  e salve os PNGs na mesma pasta deste arquivo.</p>
 
   <div class="callout info">
-    <strong>Instrução:</strong> exporte <code>fase3-dcd-padroes.puml</code> como PNG e salve como <code>fase3.png</code>.
+    <strong>Figura 3a</strong> — <code>fase3a-visao-geral.puml</code> → salvar como <code>fase3a.png</code>
   </div>
-
   <div class="diagram-box">
-    <div class="label">Figura 3 — DCD com padrões Iterator, Strategy e Observer (Fase III)</div>
-    <img src="fase3.png" alt="Diagrama de Classes de Projeto — Fase III"
+    <div class="label">Figura 3a — Visão Geral do DCD (Player + 3 interfaces)</div>
+    <img src="fase3a.png" alt="Visão Geral DCD"
          onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
-    <p class="placeholder-text" style="display:none;">
-      ⚠ Imagem não encontrada. Exporte <code>fase3-dcd-padroes.puml</code> como <code>fase3.png</code>.
-    </p>
+    <p class="placeholder-text" style="display:none;">⚠ Salve <code>fase3a.png</code> nesta pasta.</p>
   </div>
-  <p class="diagram-caption">Figura 3 — Diagrama de Classes de Projeto: evolução do Modelo de Domínio com tipos, visibilidade e padrões GoF</p>
+  <p class="diagram-caption">Figura 3a — Player como contexto central conectando os três padrões GoF</p>
+
+  <div class="callout info">
+    <strong>Figura 3b</strong> — <code>fase3b-iterator.puml</code> → salvar como <code>fase3b.png</code>
+  </div>
+  <div class="diagram-box">
+    <div class="label">Figura 3b — Padrão Iterator (RN01)</div>
+    <img src="fase3b.png" alt="Padrão Iterator"
+         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+    <p class="placeholder-text" style="display:none;">⚠ Salve <code>fase3b.png</code> nesta pasta.</p>
+  </div>
+  <p class="diagram-caption">Figura 3b — FaixaIterator e concretos: AlbumIterator, GrafoIterator, CacheIterator</p>
+
+  <div class="callout info">
+    <strong>Figura 3c</strong> — <code>fase3c-strategy.puml</code> → salvar como <code>fase3c.png</code>
+  </div>
+  <div class="diagram-box">
+    <div class="label">Figura 3c — Padrão Strategy (RN02)</div>
+    <img src="fase3c.png" alt="Padrão Strategy"
+         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+    <p class="placeholder-text" style="display:none;">⚠ Salve <code>fase3c.png</code> nesta pasta.</p>
+  </div>
+  <p class="diagram-caption">Figura 3c — EstrategiaSelecao e concretos: ModoSequencial, ModoShuffle, ModoSmartMix</p>
+
+  <div class="callout info">
+    <strong>Figura 3d</strong> — <code>fase3d-observer.puml</code> → salvar como <code>fase3d.png</code>
+  </div>
+  <div class="diagram-box">
+    <div class="label">Figura 3d — Padrão Observer (RN03)</div>
+    <img src="fase3d.png" alt="Padrão Observer"
+         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+    <p class="placeholder-text" style="display:none;">⚠ Salve <code>fase3d.png</code> nesta pasta.</p>
+  </div>
+  <p class="diagram-caption">Figura 3d — Player como Subject notificando ModuloTelemetria e ModuloHistorico (modelo Push)</p>
 
   <h4>Resumo dos padrões no DCD</h4>
   <table>
