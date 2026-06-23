@@ -1,0 +1,32 @@
+version: "3.9"
+
+networks:
+  dtp-net:
+    driver: bridge
+
+services:
+
+  ms-catalogo:
+    build:
+      context: ./ms-catalogo
+    container_name: ms-catalogo
+    networks:
+      - dtp-net
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+
+  ms-reproducao:
+    build:
+      context: ./ms-reproducao
+    container_name: ms-reproducao
+    networks:
+      - dtp-net
+    ports:
+      - "8081:8081"
+    depends_on:
+      - ms-catalogo
+    environment:
+      - PORT=8081
+      - CATALOGO_URL=http://ms-catalogo:8080

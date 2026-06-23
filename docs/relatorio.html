@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Relatório DTP — Streaming de Música</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 11pt;
+      line-height: 1.5;
+      color: #000;
+      background: #fff;
+      max-width: 750px;
+      margin: 0 auto;
+      padding: 56px 64px;
+    }
+
+    /* ── Cabeçalho do documento ── */
+    .doc-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .doc-title {
+      font-size: 14pt;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+    .doc-meta {
+      font-size: 11pt;
+      margin-bottom: 4px;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid #000;
+      margin: 20px 0;
+    }
+
+    /* ── Seções numeradas ── */
+    h2 {
+      font-size: 11pt;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin: 24px 0 8px;
+    }
+    h3 {
+      font-size: 11pt;
+      font-weight: bold;
+      text-transform: none;
+      margin: 16px 0 6px;
+    }
+    h4 {
+      font-size: 11pt;
+      font-weight: bold;
+      font-style: italic;
+      margin: 14px 0 4px;
+    }
+
+    p {
+      margin-bottom: 10px;
+      text-align: justify;
+    }
+
+    /* ── Listas ── */
+    ul {
+      padding-left: 32px;
+      margin-bottom: 10px;
+    }
+    ul li {
+      margin-bottom: 4px;
+      text-align: justify;
+    }
+    ol {
+      padding-left: 32px;
+      margin-bottom: 10px;
+    }
+    ol li {
+      margin-bottom: 6px;
+      text-align: justify;
+    }
+
+    /* ── Sub-listas ── */
+    ul ul {
+      margin-top: 4px;
+      margin-bottom: 4px;
+    }
+
+    /* ── Rótulos de fases / opções ── */
+    .label-bold {
+      font-weight: bold;
+    }
+
+    /* ── Tabelas ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0 14px;
+      font-size: 10.5pt;
+    }
+    th {
+      border: 1px solid #000;
+      padding: 5px 8px;
+      font-weight: bold;
+      background: #f2f2f2;
+      text-align: left;
+    }
+    td {
+      border: 1px solid #000;
+      padding: 5px 8px;
+      vertical-align: top;
+    }
+
+    /* ── Caixas de diagrama ── */
+    .diagram-box {
+      border: 1px solid #000;
+      padding: 12px;
+      margin: 10px 0 4px;
+      text-align: center;
+    }
+    .diagram-box img {
+      max-width: 100%;
+    }
+    .diagram-box .placeholder {
+      font-style: italic;
+      color: #555;
+      font-size: 10pt;
+      padding: 24px 0;
+    }
+    .diagram-caption {
+      font-size: 10pt;
+      text-align: center;
+      margin-bottom: 12px;
+      font-style: italic;
+    }
+
+    /* ── Blocos de código ── */
+    pre {
+      background: #f8f8f8;
+      border: 1px solid #ccc;
+      border-left: 3px solid #555;
+      padding: 10px 12px;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 8.5pt;
+      line-height: 1.45;
+      margin: 8px 0 12px;
+      overflow-x: auto;
+      white-space: pre;
+    }
+    .code-filename {
+      font-family: "Courier New", Courier, monospace;
+      font-size: 9pt;
+      font-weight: bold;
+      background: #e8e8e8;
+      border: 1px solid #ccc;
+      border-bottom: none;
+      padding: 4px 12px;
+      margin-top: 10px;
+      display: block;
+    }
+
+    /* ── Código inline ── */
+    code {
+      font-family: "Courier New", Courier, monospace;
+      font-size: 10pt;
+    }
+
+    /* ── Nota de instrução ── */
+    .instrucao {
+      font-size: 9.5pt;
+      font-style: italic;
+      color: #444;
+      margin-bottom: 4px;
+    }
+
+    /* ── Quebra de página ── */
+    .page-break { page-break-before: always; }
+
+    @media print {
+      body { max-width: 100%; padding: 15mm 20mm; }
+      .instrucao { display: none; }
+      pre { font-size: 7.5pt; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════ CABEÇALHO ══ -->
+<div class="doc-header">
+  <div class="doc-title">RELATÓRIO TÉCNICO — DESAFIO TEÓRICO-PRÁTICO (DTP)</div>
+  <div class="doc-meta">Disciplina: Projeto de Software</div>
+  <div class="doc-meta">Tema: Opção B — Streaming de Música (Microserviço de Catálogo + Microserviço de Reprodução)</div>
+  <div class="doc-meta">Repositório: github.com/RianRBPS/projeto-software-dtp</div>
+  <div class="doc-meta">Integrante: Rian R. Santana</div>
+  <div class="doc-meta">Junho de 2026</div>
+</div>
+
+<hr />
+
+<!-- ══════════════════════════════════════════════════ SEÇÃO 1 ══ -->
+<h2>1. Contexto e Restrições do Sistema</h2>
+
+<p>
+  O trabalho foi desenvolvido com base no <span class="label-bold">Tema B — Streaming de Música</span>, composto por dois microserviços
+  isolados: o <span class="label-bold">ms-catalogo</span>, responsável pelo acervo de faixas, álbuns e artistas, e o
+  <span class="label-bold">ms-reproducao</span>, responsável pela gestão do player, da fila de reprodução e do histórico do usuário.
+  Toda a gerência de estado é realizada estritamente em memória, sem qualquer banco de dados relacional ou NoSQL.
+</p>
+
+<h3>1.1. Restrições Tecnológicas</h3>
+<ul>
+  <li><span class="label-bold">Linguagem:</span> JavaScript (Node.js 20), com framework Express para as rotas HTTP.</li>
+  <li><span class="label-bold">Persistência:</span> proibido o uso de banco de dados. Todo estado é mantido em coleções locais em memória (<code>Map</code>, <code>Array</code>, <code>Set</code>).</li>
+  <li><span class="label-bold">Infraestrutura:</span> cada microserviço possui seu próprio <code>Dockerfile</code>; a orquestração é feita via <code>docker-compose.yml</code>, que configura a rede interna <code>dtp-net</code> e expõe as portas HTTP.</li>
+</ul>
+
+<h3>1.2. Regras de Negócio e Mapeamento de Padrões</h3>
+<table>
+  <thead>
+    <tr><th>RN</th><th>Descrição</th><th>Padrão GoF (Fase III)</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>RN01</td>
+      <td>A fila de reprodução agrega faixas de fontes heterogêneas (lista de álbum, grafo de recomendações, cache de histórico). O mecanismo de reprodução deve ser agnóstico quanto à estrutura de dados de origem.</td>
+      <td>Iterator</td>
+    </tr>
+    <tr>
+      <td>RN02</td>
+      <td>O algoritmo de seleção da próxima faixa deve ser intercambiável em tempo de execução: Modo Sequencial, Modo Shuffle (sem repetição no ciclo) e Modo Smart Mix (menor diferença de BPM).</td>
+      <td>Strategy</td>
+    </tr>
+    <tr>
+      <td>RN03</td>
+      <td>Alterações no estado do player (faixa atual, posição em ms, play/pause) devem notificar assincronamente o Módulo de Telemetria de Dispositivos e o Módulo de Histórico em Tempo Real.</td>
+      <td>Observer</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<!-- ══════════════════════════════════════════════════ SEÇÃO 2 ══ -->
+<h2>2. Fase I — Modelagem Conceitual (Análise de Domínio)</h2>
+
+<p>
+  A Fase I aplica a abordagem de Larman para construção do <span class="label-bold">Modelo de Domínio</span>:
+  apenas classes conceituais, atributos em linguagem natural e associações com multiplicidade e verbos de ligação.
+  É terminantemente proibido incluir assinaturas de métodos, modificadores de acesso (+/-) ou tipos de dados de linguagem de programação.
+</p>
+
+<h3>2.1. Classes Conceituais Identificadas</h3>
+<table>
+  <thead>
+    <tr><th>Classe</th><th>Atributos</th><th>Papel no Domínio</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>Usuario</code></td><td>nome, email</td><td>Titular da conta; controla o player e acumula histórico</td></tr>
+    <tr><td><code>Player</code></td><td>status</td><td>Componente central de reprodução; gerencia fila e estado</td></tr>
+    <tr><td><code>EstadoPlayer</code></td><td>posicaoMs, statusReproducao</td><td>Snapshot do instante de reprodução (faixa, posição, play/pause)</td></tr>
+    <tr><td><code>FilaReproducao</code></td><td>ordem</td><td>Agrega faixas de origens distintas; alimenta o player</td></tr>
+    <tr><td><code>Faixa</code></td><td>titulo, duracao, bpm</td><td>Unidade de conteúdo; possui metadados para o Smart Mix</td></tr>
+    <tr><td><code>Album</code></td><td>titulo, anoLancamento</td><td>Fonte linear de faixas; estrutura de lista</td></tr>
+    <tr><td><code>Artista</code></td><td>nome, genero</td><td>Autor de álbuns</td></tr>
+    <tr><td><code>GrafoRecomendacao</code></td><td>pontuacaoSimilaridade</td><td>Fonte de faixas via nós conectados por similaridade</td></tr>
+    <tr><td><code>HistoricoReproducao</code></td><td>dataHora</td><td>Registro das faixas ouvidas; base para retrospectiva</td></tr>
+    <tr><td><code>DispositivoUsuario</code></td><td>tipo, identificador</td><td>Celular, TV — receptores de telemetria do player</td></tr>
+  </tbody>
+</table>
+
+<h3>2.2. Associações Principais</h3>
+<table>
+  <thead>
+    <tr><th>Origem</th><th>Verbo</th><th>Destino</th><th>Multiplicidade</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>Usuario</code></td><td>controla</td><td><code>Player</code></td><td>1 → 1</td></tr>
+    <tr><td><code>Player</code></td><td>mantém</td><td><code>EstadoPlayer</code></td><td>1 → 1</td></tr>
+    <tr><td><code>Player</code></td><td>gerencia</td><td><code>FilaReproducao</code></td><td>1 → 1</td></tr>
+    <tr><td><code>FilaReproducao</code></td><td>agrega</td><td><code>Faixa</code></td><td>1 → 0..*</td></tr>
+    <tr><td><code>Album</code></td><td>contém</td><td><code>Faixa</code></td><td>1 → 1..*</td></tr>
+    <tr><td><code>Artista</code></td><td>lança</td><td><code>Album</code></td><td>1 → 1..*</td></tr>
+    <tr><td><code>GrafoRecomendacao</code></td><td>sugere</td><td><code>Faixa</code></td><td>1 → 0..*</td></tr>
+    <tr><td><code>Usuario</code></td><td>acumula</td><td><code>HistoricoReproducao</code></td><td>1 → 0..*</td></tr>
+    <tr><td><code>HistoricoReproducao</code></td><td>registra</td><td><code>Faixa</code></td><td>1 → 0..*</td></tr>
+    <tr><td><code>Usuario</code></td><td>usa</td><td><code>DispositivoUsuario</code></td><td>1 → 1..*</td></tr>
+  </tbody>
+</table>
+
+<h3>2.3. Diagrama de Classes de Análise</h3>
+<div class="diagram-box">
+  <img src="fase1.png" alt="Diagrama de Classes de Análise — Fase I"
+       onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+  <div class="placeholder" style="display:none;">[ Diagrama de Classes de Análise — Fase I ]</div>
+</div>
+<p class="diagram-caption">Figura 1 — Modelo de Domínio seguindo o padrão Larman (sem métodos, modificadores de acesso ou tipos de linguagem)</p>
+
+<hr />
+
+<!-- ══════════════════════════════════════════════════ SEÇÃO 3 ══ -->
+<h2>3. Fase II — Modelagem de Arquitetura (Microserviços)</h2>
+
+<p>
+  O sistema é decomposto em dois microserviços isolados, cada um com sua própria memória interna e sem compartilhamento de estado.
+  A orquestração é feita via <code>docker-compose.yml</code>, que configura a rede interna <code>dtp-net</code> e expõe as portas HTTP ao cliente externo.
+</p>
+
+<h3>3.1. Decomposição em Microserviços</h3>
+<table>
+  <thead>
+    <tr><th>Container</th><th>Porta</th><th>Responsabilidades</th><th>Estado em memória</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>ms-catalogo</code></td>
+      <td>8080</td>
+      <td>CRUD de Faixas, Albums, Artistas e GrafoRecomendacao</td>
+      <td><code>Map&lt;id,Faixa&gt;</code>, <code>Map&lt;id,Album&gt;</code>, <code>Map&lt;id,Artista&gt;</code>, <code>GrafoRecomendacao</code></td>
+    </tr>
+    <tr>
+      <td><code>ms-reproducao</code></td>
+      <td>8081</td>
+      <td>Gestão do Player, FilaReproducao, EstadoPlayer, HistoricoReproducao e Dispositivos</td>
+      <td><code>Player</code>, <code>FilaReproducao</code>, <code>EstadoPlayer</code>, <code>ModuloHistorico</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>3.2. Protocolo de Comunicação</h3>
+<table>
+  <thead>
+    <tr><th>Origem</th><th>Destino</th><th>Tipo</th><th>Exemplo de Rota</th><th>Propósito</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>ms-reproducao</code></td>
+      <td><code>ms-catalogo</code></td>
+      <td>HTTP GET síncrono</td>
+      <td><code>GET /faixas/{id}</code></td>
+      <td>Buscar dados de faixas para popular a fila</td>
+    </tr>
+    <tr>
+      <td><code>ms-reproducao</code></td>
+      <td>ModuloTelemetria</td>
+      <td>HTTP POST assíncrono</td>
+      <td><code>POST /telemetria/estado</code></td>
+      <td>Notificar celular e TV do usuário (Observer RN03)</td>
+    </tr>
+    <tr>
+      <td><code>ms-reproducao</code></td>
+      <td>ModuloHistorico</td>
+      <td>Chamada interna assíncrona</td>
+      <td>—</td>
+      <td>Computar dados para a retrospectiva (Observer RN03)</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>
+  <span class="label-bold">Isolamento de memória:</span> nenhum objeto é compartilhado entre containers.
+  O <code>ms-reproducao</code> mantém apenas o ID da faixa em sua fila; os dados completos (título, BPM etc.)
+  são buscados sob demanda no <code>ms-catalogo</code> via HTTP GET síncrono, usando <code>axios</code>.
+</p>
+
+<h3>3.3. Diagrama de Componentes</h3>
+<div class="diagram-box">
+  <img src="fase2.png" alt="Diagrama de Componentes — Fase II"
+       onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+  <div class="placeholder" style="display:none;">[ Diagrama de Componentes — Fase II ]</div>
+</div>
+<p class="diagram-caption">Figura 2 — Diagrama de Componentes: isolamento de memória por container e comunicação REST/HTTP na rede Docker</p>
+
+<hr />
+
+<!-- ══════════════════════════════════════════════════ SEÇÃO 4 ══ -->
+<h2>4. Fase III — Design Detalhado (Padrões de Projeto GoF)</h2>
+
+<p>
+  O Diagrama de Classes de Projeto (DCD) é a evolução direta do Modelo de Domínio da Fase I.
+  Nesta fase, todos os atributos recebem tipos de dados, os métodos ganham assinaturas completas com parâmetros,
+  a visibilidade é explicitada (+ / -) e os três padrões GoF são aplicados conforme o mapeamento mandatório do DTP.
+  O DCD é apresentado em quatro diagramas complementares para garantir legibilidade.
+</p>
+
+<!-- ── ITERATOR ── -->
+<h3>4.1. Padrão Iterator — RN01: Fila de Reprodução Agnóstica</h3>
+
+<p>
+  A RN01 exige que o componente que consome a fila de reprodução seja completamente agnóstico quanto à estrutura
+  de dados interna de cada fonte — lista linear de álbum, grafo de recomendações ou cache de histórico.
+  O padrão <span class="label-bold">Iterator</span> resolve isso encapsulando a travessia atrás de uma interface uniforme.
+</p>
+
+<ul>
+  <li><span class="label-bold">Interface <code>FaixaIterator</code>:</span> define <code>hasNext(): boolean</code>, <code>next(): Faixa</code> e <code>reset(): void</code> — única interface que o cliente (<code>FilaReproducao</code>) conhece e utiliza.</li>
+  <li><span class="label-bold"><code>AlbumIterator</code>:</span> itera sobre <code>Array&lt;Faixa&gt;</code> de um álbum por índice. Implementação O(1) por acesso.</li>
+  <li><span class="label-bold"><code>GrafoIterator</code>:</span> percorre os nós do grafo de recomendações via BFS, controlando um <code>Set</code> de visitados para evitar ciclos.</li>
+  <li><span class="label-bold"><code>CacheIterator</code>:</span> itera sobre a lista linear do cache de busca, sem nenhum conhecimento de onde esses dados foram originados.</li>
+  <li><span class="label-bold"><code>FilaReproducao</code> (agregado):</span> aceita qualquer <code>FaixaIterator</code> via <code>carregarFonte(iterator)</code>; drena o iterador para um buffer interno e jamais expõe a estrutura original.</li>
+</ul>
+
+<div class="diagram-box">
+  <img src="fase3b.png" alt="Padrão Iterator"
+       onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+  <div class="placeholder" style="display:none;">[ DCD — Padrão Iterator (RN01) ]</div>
+</div>
+<p class="diagram-caption">Figura 3 — DCD do padrão Iterator: FaixaIterator e os três iteradores concretos</p>
+
+<!-- ── STRATEGY ── -->
+<h3>4.2. Padrão Strategy — RN02: Algoritmo de Seleção Intercambiável</h3>
+
+<p>
+  A RN02 exige que o comportamento de seleção da próxima faixa mude dinamicamente, sem reiniciar o container.
+  O padrão <span class="label-bold">Strategy</span> encapsula cada algoritmo em uma classe concreta intercambiável
+  em tempo de execução via <code>Player.definirEstrategia()</code>.
+</p>
+
+<ul>
+  <li><span class="label-bold">Interface <code>EstrategiaSelecao</code>:</span> contrato único — <code>selecionarProxima(buffer: Array&lt;Faixa&gt;, historico: Array&lt;Faixa&gt;): Faixa</code>.</li>
+  <li><span class="label-bold"><code>ModoSequencial</code>:</span> segue estritamente a ordem de inserção na fila, esvaziando-a progressivamente com <code>Array.shift()</code>.</li>
+  <li><span class="label-bold"><code>ModoShuffle</code>:</span> seleciona aleatoriamente sem repetir faixas no ciclo atual; mantém um <code>Set</code> interno de IDs já tocados.</li>
+  <li><span class="label-bold"><code>ModoSmartMix</code>:</span> varre o buffer e seleciona a faixa com menor <code>|bpm_candidata - bpm_atual|</code>, priorizando continuidade de ritmo.</li>
+  <li><span class="label-bold"><code>Player</code> (contexto):</span> delega a seleção à estratégia configurada; <code>definirEstrategia()</code> permite a troca em runtime — evidenciando o princípio Open/Closed.</li>
+</ul>
+
+<div class="diagram-box">
+  <img src="fase3c.png" alt="Padrão Strategy"
+       onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+  <div class="placeholder" style="display:none;">[ DCD — Padrão Strategy (RN02) ]</div>
+</div>
+<p class="diagram-caption">Figura 4 — DCD do padrão Strategy: EstrategiaSelecao e os três modos concretos</p>
+
+<!-- ── OBSERVER ── -->
+<h3>4.3. Padrão Observer — RN03: Sincronização de Estado</h3>
+
+<p>
+  A RN03 exige que mudanças no <code>EstadoPlayer</code> sincronizem automaticamente e de forma assíncrona
+  dois módulos independentes. O padrão <span class="label-bold">Observer</span> desacopla o <code>Player</code>
+  (Subject) dos módulos receptores (Observers).
+</p>
+
+<ul>
+  <li><span class="label-bold">Interface <code>ObservadorEstado</code>:</span> contrato único — <code>atualizar(estado: EstadoPlayer): void</code>.</li>
+  <li><span class="label-bold"><code>ModuloTelemetria</code>:</span> recebe o estado e envia HTTP POST assíncrono (fire-and-forget) para cada URL de dispositivo registrada.</li>
+  <li><span class="label-bold"><code>ModuloHistorico</code>:</span> recebe o estado e registra a faixa em <code>Array&lt;HistoricoReproducao&gt;</code> em memória, apenas quando <code>posicaoMs === 0</code> (início de reprodução de nova faixa).</li>
+  <li><span class="label-bold"><code>Player</code> (Subject):</span> mantém <code>_observers: Array&lt;ObservadorEstado&gt;</code>; invoca <code>_notificarObservadores()</code> em toda mudança de estado.</li>
+</ul>
+
+<h4>Justificativa: Push vs. Pull</h4>
+
+<p>
+  Adotou-se o modelo <span class="label-bold">Push</span>: o <code>Player</code> envia o <code>EstadoPlayer</code>
+  completo a cada observer no momento da notificação. A escolha se justifica por três razões:
+</p>
+<ol>
+  <li>
+    <span class="label-bold">Redução de round-trips de rede:</span> no modelo Pull, cada observer precisaria fazer
+    uma requisição adicional ao <code>Player</code> para buscar o estado — dobrando o tráfego entre microserviços.
+    No modelo Push, um único evento carrega tudo que o observer precisa.
+  </li>
+  <li>
+    <span class="label-bold">Interface autocontida:</span> o contrato <code>atualizar(estado)</code> carrega tudo
+    que o observer precisa; ele não mantém referência ao Subject nem conhece sua API de leitura,
+    reduzindo o acoplamento estrutural entre módulos.
+  </li>
+  <li>
+    <span class="label-bold">Trade-off aceito:</span> o acoplamento de dados cresce — qualquer campo adicionado a
+    <code>EstadoPlayer</code> é propagado a todos os observers, mesmo que não o utilizem.
+    Para o escopo deste sistema, onde <code>EstadoPlayer</code> possui apenas três campos
+    (<code>faixaAtualId</code>, <code>posicaoMs</code>, <code>statusReproducao</code>), esse custo é desprezível
+    e o benefício de desempenho de rede supera o aumento de acoplamento.
+    Em sistemas de larga escala, o Pull seria preferível quando os observers precisam de subconjuntos
+    diferentes do estado — evitando tráfego supérfluo.
+  </li>
+</ol>
+
+<div class="diagram-box">
+  <img src="fase3d.png" alt="Padrão Observer"
+       onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+  <div class="placeholder" style="display:none;">[ DCD — Padrão Observer (RN03) ]</div>
+</div>
+<p class="diagram-caption">Figura 5 — DCD do padrão Observer: Player como Subject notificando ModuloTelemetria e ModuloHistorico (modelo Push)</p>
+
+<!-- ── VISÃO GERAL ── -->
+<h3>4.4. Visão Geral do DCD</h3>
+
+<p>
+  O diagrama a seguir apresenta a visão consolidada do DCD, mostrando o <code>Player</code> como contexto central
+  que integra os três padrões aplicados.
+</p>
+
+<div class="diagram-box">
+  <img src="fase3a.png" alt="Visão Geral DCD"
+       onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+  <div class="placeholder" style="display:none;">[ DCD — Visão Geral ]</div>
+</div>
+<p class="diagram-caption">Figura 6 — Visão geral do DCD: Player integrando FaixaIterator (Iterator), EstrategiaSelecao (Strategy) e ObservadorEstado (Observer)</p>
+
+<hr />
+
+<!-- ══════════════════════════════════════════════════ SEÇÃO 5 ══ -->
+<div class="page-break"></div>
+<h2>5. Fase IV — Implementação e Conteinerização</h2>
+
+<p>
+  A implementação foi realizada em <span class="label-bold">JavaScript (Node.js 20)</span> com o framework Express,
+  traduzindo fielmente cada classe e interface do DCD da Fase III. A seguir são apresentados os
+  trechos de código mais relevantes de cada padrão, seguidos dos artefatos de infraestrutura.
+</p>
+
+<h3>5.1. Estrutura de Diretórios</h3>
+
+<pre>projeto-software-dtp/
+├── ms-catalogo/
+│   ├── src/
+│   │   ├── iterators/
+│   │   │   ├── FaixaIterator.js      ← interface base
+│   │   │   ├── AlbumIterator.js
+│   │   │   ├── GrafoIterator.js
+│   │   │   └── CacheIterator.js
+│   │   └── repository/
+│   │       └── GrafoRecomendacao.js
+│   ├── index.js
+│   ├── package.json
+│   └── Dockerfile
+├── ms-reproducao/
+│   ├── src/
+│   │   ├── domain/
+│   │   │   ├── EstadoPlayer.js
+│   │   │   └── FilaReproducao.js
+│   │   ├── strategies/
+│   │   │   ├── EstrategiaSelecao.js  ← interface base
+│   │   │   ├── ModoSequencial.js
+│   │   │   ├── ModoShuffle.js
+│   │   │   ├── ModoSmartMix.js
+│   │   │   └── ModoCronologico.js    ← nova estratégia (demo Open/Closed)
+│   │   ├── observer/
+│   │   │   ├── ObservadorEstado.js   ← interface base
+│   │   │   ├── ModuloTelemetria.js
+│   │   │   └── ModuloHistorico.js
+│   │   └── player/
+│   │       └── Player.js
+│   ├── index.js
+│   ├── package.json
+│   └── Dockerfile
+└── docker-compose.yml</pre>
+
+<!-- ── ITERATOR impl ── -->
+<h3>5.2. Implementação do Padrão Iterator (ms-catalogo)</h3>
+
+<p>
+  O ponto central desta implementação é a garantia de que o cliente nunca acessa a coleção interna —
+  ele usa exclusivamente a interface <code>FaixaIterator</code>.
+</p>
+
+<span class="code-filename">ms-catalogo/src/iterators/FaixaIterator.js</span>
+<pre>class FaixaIterator {
+  hasNext() { throw new Error('hasNext() não implementado'); }
+  next()    { throw new Error('next() não implementado'); }
+  reset()   { throw new Error('reset() não implementado'); }
+}
+module.exports = FaixaIterator;</pre>
+
+<span class="code-filename">ms-catalogo/src/iterators/AlbumIterator.js</span>
+<pre>const FaixaIterator = require('./FaixaIterator');
+
+class AlbumIterator extends FaixaIterator {
+  constructor(faixas) {       // faixas: Array — NUNCA exposto ao cliente
+    super();
+    this._faixas = faixas;
+    this._indice = 0;
+  }
+  hasNext() { return this._indice &lt; this._faixas.length; }
+  next()    { return this.hasNext() ? this._faixas[this._indice++] : null; }
+  reset()   { this._indice = 0; }
+}
+module.exports = AlbumIterator;</pre>
+
+<span class="code-filename">ms-catalogo/src/iterators/GrafoIterator.js</span>
+<pre>const FaixaIterator = require('./FaixaIterator');
+
+class GrafoIterator extends FaixaIterator {
+  constructor(adjacencias, noInicial) {   // adjacencias: Map — NUNCA exposto ao cliente
+    super();
+    this._adj      = adjacencias;
+    this._inicial  = noInicial;
+    this._fila     = [noInicial];
+    this._visitados = new Set([noInicial.id]);
+  }
+  hasNext() { return this._fila.length > 0; }
+  next() {
+    if (!this.hasNext()) return null;
+    const no = this._fila.shift();
+    for (const vizinho of (this._adj.get(no.id) ?? [])) {
+      if (!this._visitados.has(vizinho.id)) {
+        this._visitados.add(vizinho.id);
+        this._fila.push(vizinho);
+      }
+    }
+    return no.faixa;
+  }
+  reset() {
+    this._fila      = [this._inicial];
+    this._visitados = new Set([this._inicial.id]);
+  }
+}
+module.exports = GrafoIterator;</pre>
+
+<span class="code-filename">ms-catalogo/src/iterators/CacheIterator.js</span>
+<pre>const FaixaIterator = require('./FaixaIterator');
+
+class CacheIterator extends FaixaIterator {
+  constructor(cacheFaixas) {   // cacheFaixas: Array — NUNCA exposto ao cliente
+    super();
+    this._cache  = [...cacheFaixas];
+    this._indice = 0;
+  }
+  hasNext() { return this._indice &lt; this._cache.length; }
+  next()    { return this.hasNext() ? this._cache[this._indice++] : null; }
+  reset()   { this._indice = 0; }
+}
+module.exports = CacheIterator;</pre>
+
+<p>
+  O trecho abaixo, extraído da rota de álbum em <code>ms-catalogo/index.js</code>,
+  evidencia o <span class="label-bold">encapsulamento total</span>: o cliente usa exclusivamente
+  os métodos <code>hasNext()</code> e <code>next()</code> da interface — jamais manipula
+  <code>album.faixas</code> diretamente.
+</p>
+
+<span class="code-filename">ms-catalogo/index.js — rota GET /albums/:id/iterator</span>
+<pre>app.get('/albums/:id/iterator', (req, res) => {
+  const album = albums.get(req.params.id);
+  if (!album) return res.status(404).json({ erro: 'Album não encontrado' });
+
+  // Cliente só conhece a interface FaixaIterator — nunca acessa album.faixas
+  const iterator = new AlbumIterator(album.faixas);
+  const resultado = [];
+  while (iterator.hasNext()) {
+    resultado.push(iterator.next());  // única chamada: next()
+  }
+  res.json(resultado);
+});</pre>
+
+<!-- ── STRATEGY impl ── -->
+<h3>5.3. Implementação do Padrão Strategy (ms-reproducao)</h3>
+
+<span class="code-filename">ms-reproducao/src/strategies/EstrategiaSelecao.js</span>
+<pre>class EstrategiaSelecao {
+  // buffer: Array&lt;Faixa&gt;, historico: Array&lt;Faixa&gt; → Faixa | null
+  selecionarProxima(buffer, historico) {
+    throw new Error('selecionarProxima() não implementado');
+  }
+}
+module.exports = EstrategiaSelecao;</pre>
+
+<span class="code-filename">ms-reproducao/src/strategies/ModoSequencial.js</span>
+<pre>const EstrategiaSelecao = require('./EstrategiaSelecao');
+
+class ModoSequencial extends EstrategiaSelecao {
+  selecionarProxima(buffer, _historico) {
+    return buffer.length > 0 ? buffer.shift() : null;
+  }
+}
+module.exports = ModoSequencial;</pre>
+
+<span class="code-filename">ms-reproducao/src/strategies/ModoShuffle.js</span>
+<pre>const EstrategiaSelecao = require('./EstrategiaSelecao');
+
+class ModoShuffle extends EstrategiaSelecao {
+  constructor() { super(); this._tocadas = new Set(); }
+
+  selecionarProxima(buffer, _historico) {
+    const disponiveis = buffer.filter(f => !this._tocadas.has(f.id));
+    if (disponiveis.length === 0) { this._tocadas.clear(); return null; }
+    const escolhida = disponiveis[Math.floor(Math.random() * disponiveis.length)];
+    this._tocadas.add(escolhida.id);
+    buffer.splice(buffer.indexOf(escolhida), 1);
+    return escolhida;
+  }
+}
+module.exports = ModoShuffle;</pre>
+
+<span class="code-filename">ms-reproducao/src/strategies/ModoSmartMix.js</span>
+<pre>const EstrategiaSelecao = require('./EstrategiaSelecao');
+
+class ModoSmartMix extends EstrategiaSelecao {
+  selecionarProxima(buffer, historico) {
+    if (buffer.length === 0) return null;
+    const atual = historico.at(-1);
+    if (!atual) return buffer.shift();
+
+    let melhor    = buffer[0];
+    let menorDiff = Math.abs(melhor.bpm - atual.bpm);
+    for (const f of buffer) {
+      const diff = Math.abs(f.bpm - atual.bpm);
+      if (diff &lt; menorDiff) { melhor = f; menorDiff = diff; }
+    }
+    buffer.splice(buffer.indexOf(melhor), 1);
+    return melhor;
+  }
+}
+module.exports = ModoSmartMix;</pre>
+
+<p>
+  A nova estratégia abaixo, <span class="label-bold">ModoCronologico</span>, foi adicionada após
+  a modelagem inicial para demonstrar o princípio Open/Closed: o sistema foi <em>aberto para extensão</em>
+  sem qualquer modificação no <code>Player</code>, na rota HTTP ou nas outras estratégias — apenas
+  criando um novo arquivo e registrando-o no mapa de estratégias do <code>index.js</code>.
+</p>
+
+<span class="code-filename">ms-reproducao/src/strategies/ModoCronologico.js</span>
+<pre>const EstrategiaSelecao = require('./EstrategiaSelecao');
+
+class ModoCronologico extends EstrategiaSelecao {
+  selecionarProxima(buffer, _historico) {
+    if (buffer.length === 0) return null;
+    // Ordena por ano de lançamento crescente e retira o primeiro
+    buffer.sort((a, b) => (a.anoLancamento ?? 0) - (b.anoLancamento ?? 0));
+    return buffer.shift();
+  }
+}
+module.exports = ModoCronologico;</pre>
+
+<!-- ── OBSERVER impl ── -->
+<h3>5.4. Implementação do Padrão Observer (ms-reproducao)</h3>
+
+<span class="code-filename">ms-reproducao/src/observer/ObservadorEstado.js</span>
+<pre>class ObservadorEstado {
+  atualizar(estado) { throw new Error('atualizar() não implementado'); }
+}
+module.exports = ObservadorEstado;</pre>
+
+<span class="code-filename">ms-reproducao/src/observer/ModuloTelemetria.js</span>
+<pre>const ObservadorEstado = require('./ObservadorEstado');
+const axios = require('axios');
+
+class ModuloTelemetria extends ObservadorEstado {
+  constructor(dispositivoUrls = []) {
+    super();
+    this._urls = dispositivoUrls;
+  }
+  atualizar(estado) {
+    // Fire-and-forget: não bloqueia o Subject
+    for (const url of this._urls) {
+      axios.post(url, estado).catch(() => {});
+    }
+  }
+}
+module.exports = ModuloTelemetria;</pre>
+
+<span class="code-filename">ms-reproducao/src/observer/ModuloHistorico.js</span>
+<pre>const ObservadorEstado = require('./ObservadorEstado');
+
+class ModuloHistorico extends ObservadorEstado {
+  constructor() { super(); this._historico = []; }
+
+  atualizar(estado) {
+    // Registra somente quando uma nova faixa começa (posicaoMs === 0)
+    if (estado.statusReproducao === 'PLAYING' &amp;&amp; estado.posicaoMs === 0) {
+      this._historico.push({
+        faixaId:  estado.faixaAtualId,
+        titulo:   estado.faixaAtualTitulo,
+        dataHora: new Date().toISOString()
+      });
+    }
+  }
+  obterHistorico() { return [...this._historico]; }
+}
+module.exports = ModuloHistorico;</pre>
+
+<span class="code-filename">ms-reproducao/src/player/Player.js</span>
+<pre>const EstadoPlayer    = require('../domain/EstadoPlayer');
+const ModoSequencial  = require('../strategies/ModoSequencial');
+
+class Player {
+  constructor() {
+    this._estado     = new EstadoPlayer();
+    this._fila       = null;
+    this._estrategia = new ModoSequencial();
+    this._observers  = [];        // Array&lt;ObservadorEstado&gt;
+    this._historico  = [];        // Array&lt;Faixa&gt; — para o SmartMix
+  }
+
+  // ── Gestão de Observers ──────────────────────────────────────────
+  registrar(observer) { this._observers.push(observer); }
+  remover(observer)   { this._observers = this._observers.filter(o => o !== observer); }
+
+  _notificarObservadores() {
+    const snapshot = { ...this._estado };   // modelo Push: estado completo
+    for (const o of this._observers) o.atualizar(snapshot);
+  }
+
+  // ── Gestão de Estratégia ─────────────────────────────────────────
+  definirEstrategia(estrategia) { this._estrategia = estrategia; }
+  definirFila(fila)             { this._fila = fila; }
+
+  // ── Operações do Player ──────────────────────────────────────────
+  play() {
+    this._estado.statusReproducao = 'PLAYING';
+    this._notificarObservadores();
+    return { ...this._estado };
+  }
+
+  pause() {
+    this._estado.statusReproducao = 'PAUSED';
+    this._notificarObservadores();
+    return { ...this._estado };
+  }
+
+  avancar() {
+    const buffer  = this._fila?.obterBuffer() ?? [];
+    const proxima = this._estrategia.selecionarProxima(buffer, this._historico);
+    if (proxima) {
+      this._historico.push(proxima);
+      this._estado.faixaAtualId     = proxima.id;
+      this._estado.faixaAtualTitulo = proxima.titulo;
+      this._estado.posicaoMs        = 0;
+      this._estado.statusReproducao = 'PLAYING';
+      this._notificarObservadores();
+    }
+    return { ...this._estado };
+  }
+
+  obterEstado() { return { ...this._estado }; }
+}
+module.exports = Player;</pre>
+
+<!-- ── ROTAS ── -->
+<h3>5.5. Endpoints HTTP</h3>
+
+<table>
+  <thead>
+    <tr><th>Serviço</th><th>Método</th><th>Rota</th><th>Descrição</th></tr>
+  </thead>
+  <tbody>
+    <tr><td rowspan="5"><code>ms-catalogo</code><br/>:8080</td>
+        <td>GET</td><td><code>/faixas</code></td><td>Lista todas as faixas em memória</td></tr>
+    <tr><td>GET</td><td><code>/faixas/:id</code></td><td>Busca faixa por ID (consumido pelo ms-reproducao)</td></tr>
+    <tr><td>POST</td><td><code>/faixas</code></td><td>Cadastra nova faixa</td></tr>
+    <tr><td>POST</td><td><code>/albums</code></td><td>Cadastra álbum com lista de faixas</td></tr>
+    <tr><td>GET</td><td><code>/albums/:id/iterator</code></td><td>Drena AlbumIterator e retorna lista de faixas</td></tr>
+    <tr><td rowspan="6"><code>ms-reproducao</code><br/>:8081</td>
+        <td>POST</td><td><code>/player/fila</code></td><td>Carrega fila com array de IDs (busca no catálogo)</td></tr>
+    <tr><td>POST</td><td><code>/player/play</code></td><td>Inicia reprodução → notifica observers</td></tr>
+    <tr><td>POST</td><td><code>/player/pause</code></td><td>Pausa reprodução → notifica observers</td></tr>
+    <tr><td>POST</td><td><code>/player/proximo</code></td><td>Avança faixa usando a estratégia configurada</td></tr>
+    <tr><td>PUT</td><td><code>/player/estrategia</code></td><td>Troca estratégia em runtime (body: <code>{"modo":"shuffle"}</code>)</td></tr>
+    <tr><td>GET</td><td><code>/historico</code></td><td>Retorna histórico registrado pelo ModuloHistorico</td></tr>
+  </tbody>
+</table>
+
+<!-- ── DOCKERFILES ── -->
+<h3>5.6. Dockerfiles</h3>
+
+<span class="code-filename">ms-catalogo/Dockerfile</span>
+<pre>FROM node:20-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY src/ ./src/
+COPY index.js .
+EXPOSE 8080
+CMD ["node", "index.js"]</pre>
+
+<span class="code-filename">ms-reproducao/Dockerfile</span>
+<pre>FROM node:20-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY src/ ./src/
+COPY index.js .
+EXPOSE 8081
+CMD ["node", "index.js"]</pre>
+
+<!-- ── DOCKER COMPOSE ── -->
+<h3>5.7. Orquestração — docker-compose.yml</h3>
+
+<span class="code-filename">docker-compose.yml</span>
+<pre>version: "3.9"
+
+networks:
+  dtp-net:
+    driver: bridge
+
+services:
+
+  ms-catalogo:
+    build:
+      context: ./ms-catalogo
+    container_name: ms-catalogo
+    networks:
+      - dtp-net
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+
+  ms-reproducao:
+    build:
+      context: ./ms-reproducao
+    container_name: ms-reproducao
+    networks:
+      - dtp-net
+    ports:
+      - "8081:8081"
+    depends_on:
+      - ms-catalogo
+    environment:
+      - PORT=8081
+      - CATALOGO_URL=http://ms-catalogo:8080</pre>
+
+<p>
+  Para executar o sistema completo basta rodar <code>docker compose up --build</code> na raiz do repositório.
+  O <code>ms-reproducao</code> aguarda o <code>ms-catalogo</code> estar disponível antes de iniciar
+  (controlado por <code>depends_on</code>).
+  Nenhum dado é escrito em disco — toda a memória dos containers é volátil e reiniciada a cada <code>docker compose down</code>.
+</p>
+
+<hr />
+
+<!-- ══════════════════════════════════════════════════ SEÇÃO 6 ══ -->
+<h2>6. Itens Obrigatórios da Apresentação</h2>
+
+<h3>6.1. Demonstração Dinâmica do Strategy</h3>
+<p>
+  A seguência de chamadas abaixo evidencia o princípio Open/Closed em ação: o <code>ModoCronologico</code>
+  foi criado após a modelagem inicial sem modificar nenhuma classe existente. A troca acontece em tempo de
+  execução sem reiniciar o container — o <code>Player</code> é o único ponto de mudança.
+</p>
+
+<pre># 1. Carregar fila com 3 faixas (anos de lançamento distintos)
+curl -X POST http://localhost:8081/player/fila \
+  -H "Content-Type: application/json" \
+  -d '{"faixaIds": ["f1", "f2", "f3"]}'
+
+# 2. Tocar no modo padrão (Sequencial)
+curl -X POST http://localhost:8081/player/estrategia \
+  -H "Content-Type: application/json" \
+  -d '{"modo": "sequencial"}'
+
+curl -X POST http://localhost:8081/player/proximo
+# → retorna faixa na ordem de inserção
+
+# 3. TROCAR para ModoCronologico em runtime (sem reiniciar o container)
+curl -X PUT http://localhost:8081/player/estrategia \
+  -H "Content-Type: application/json" \
+  -d '{"modo": "cronologico"}'
+
+curl -X POST http://localhost:8081/player/proximo
+# → retorna a faixa com menor anoLancamento do buffer restante</pre>
+
+<h3>6.2. Defesa Científica do Observer (Push vs. Pull)</h3>
+<p>
+  Conforme justificado na Seção 4.3, a equipe adotou o modelo Push. A defesa deverá discutir formalmente:
+</p>
+<ul>
+  <li>
+    <span class="label-bold">Acoplamento:</span> no Push, os observers acoplam-se à estrutura de
+    <code>EstadoPlayer</code>. No Pull, os observers acoplam-se à API do Subject (precisariam chamar
+    <code>player.obterEstado()</code>). O Push troca acoplamento de dados por acoplamento estrutural
+    — preferível quando o estado é pequeno e estável.
+  </li>
+  <li>
+    <span class="label-bold">Tráfego de rede:</span> o Push gera <em>N</em> requisições por evento (uma por observer).
+    O Pull geraria <em>2N</em> (um aviso + uma requisição de busca). Para dois observers fixos, o Pull
+    dobraria o tráfego sem nenhum benefício de filtragem.
+  </li>
+  <li>
+    <span class="label-bold">Evolução a longo prazo:</span> se novos campos forem adicionados a <code>EstadoPlayer</code>,
+    o Push força todos os observers a receberem os dados novos. O Pull seria preferível se os observers
+    consumissem subconjuntos muito distintos do estado — evitando bytes desnecessários na serialização.
+    Para o escopo atual (3 campos, 2 observers), o Push é superior.
+  </li>
+</ul>
+
+<h3>6.3. Encapsulamento do Iterator</h3>
+<p>
+  Conforme demonstrado na Seção 5.2, o cliente que lê a fila de reprodução faz uso exclusivo da
+  interface <code>FaixaIterator</code>: as únicas chamadas permitidas são <code>hasNext()</code>,
+  <code>next()</code> e <code>reset()</code>. Nenhuma rota, nenhum método do <code>Player</code> e
+  nenhum método da <code>FilaReproducao</code> acessa ou expõe <code>album.faixas</code>,
+  <code>Map&lt;NoGrafo&gt;</code> ou qualquer coleção interna das fontes.
+  O encapsulamento é garantido por design: as coleções internas são atributos privados
+  (prefixo <code>_</code>) dos iteradores concretos, tornando o acesso externo estruturalmente impossível
+  em JavaScript sem contornar a convenção deliberadamente.
+</p>
+
+</body>
+</html>
